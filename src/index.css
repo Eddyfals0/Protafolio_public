@@ -1,0 +1,48 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #050505;
+    font-family: 'Roboto', sans-serif;
+    color: #ffffff;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    cursor: none;
+}
+
+#root {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* El marco que delimita las partículas y el contenido */
+.main-frame {
+    position: relative;
+    width: calc(100% - 60px);
+    height: calc(100% - 60px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    pointer-events: none;
+    /* Dejar pasar eventos al canvas */
+}
+
+.main-frame * {
+    pointer-events: auto;
+    /* Reactivar eventos para el menú */
+}
+
+@media (max-width: 768px) {
+    .main-frame {
+        width: calc(100% - 30px);
+        height: calc(100% - 30px);
+    }
+}

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rotación Lenta y Relajada</title>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #050505;
+        }
+
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .glass-container {
+            position: absolute;
+            top: 35px;
+            left: 35px;
+            right: 35px;
+            bottom: 35px;
+            background: rgba(255, 255, 255, 0.01);
+            backdrop-filter: blur(1px);
+            -webkit-backdrop-filter: blur(1px);
+            border: 2px solid #ffffff;
+            border-radius: 0;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            z-index: 10;
+            overflow: auto;
+            color: white;
+            /* Default text color */
+            font-family: sans-serif;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="glass-container">
+        <!-- Contenido aquí -->
+    </div>
+
+    <script>
+        /**
+         * CONFIGURACIÓN RESTAURADA (VERSIÓN ESTABLE PRE-RESPONSIVE)
+         */
+        const PARTICLE_COUNT = 85000;
+        const EDGE_RATIO = 0.2;
+
+        const ORBIT_DISTANCE_RATIO = 0.60;
+        const CIRCLE_SIZE_RATIO = 0.90;
+
+        const ORBIT_SPEED = 0.00005;
+        const PARTICLE_WAVE_SPEED = 0.0003;
+        const PARTICLE_WAVE_AMP = 25;
+
+        const COLORS = ['#0a0a0a', '#111', '#1a1a1a', '#222', '#2a2a2a', '#333'];
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+
+        let width, height, centerX, centerY, minDim;
+        let orbitAngle = 0;
+        let mouseX = -1000;
+        let mouseY = -1000;
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        window.addEventListener('mouseleave', () => {
+            mouseX = -1000;
+            mouseY = -1000;
+        });
+
+        // ARRAYS TIPADOS (Mantenemos optimización de memoria)
+        const pX = new Float32Array(PARTICLE_COUNT);
+        const pY = new Float32Array(PARTICLE_COUNT);
+        const pPhaseX = new Float32Array(PARTICLE_COUNT);
+        const pPhaseY = new Float32Array(PARTICLE_COUNT);
+        const pGroup = new Uint8Array(PARTICLE_COUNT);
+        const pColorIndex = new Uint8Array(PARTICLE_COUNT);
+        const pSize = new Float32Array(PARTICLE_COUNT);
+
+        function initParticles() {
+            resize();
+
+            const maxRadius = minDim * CIRCLE_SIZE_RATIO;
+            const edgeCount = Math.floor(PARTICLE_COUNT * EDGE_RATIO);
+
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                pGroup[i] = i % 2;
+                pPhaseX[i] = Math.random() * Math.PI * 2;
+                pPhaseY[i] = Math.random() * Math.PI * 2;
+
+                const isEdgeParticle = i < edgeCount;
+                let angle, radius;
+
+                if (isEdgeParticle) {
+                    angle = Math.random() * Math.PI * 2;
+                    radius = maxRadius * (0.95 + Math.random() * 0.05);
+                    pColorIndex[i] = Math.floor(Math.random() * COLORS.length);
+                    pSize[i] = 1.5 + Math.random() * 1.5;
+                } else {
+                    angle = Math.random() * Math.PI * 2;
+                    radius = Math.sqrt(Math.random()) * (maxRadius * 0.95);
+                    pColorIndex[i] = Math.floor(Math.random() * COLORS.length);
+                    pSize[i] = 1.5 + Math.random();
+                }
+
+                pX[i] = Math.cos(angle) * radius;
+                pY[i] = Math.sin(angle) * radius;
+            }
+        }
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            centerX = width / 2;
+            centerY = height / 2;
+            minDim = Math.min(width, height);
+        }
+
+        function animate() {
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 0, width, height);
+
+            orbitAngle += ORBIT_SPEED;
+            const time = Date.now();
+
+            const orbitDist = Math.max(width, height) * ORBIT_DISTANCE_RATIO;
+
+            const c1x = centerX + Math.cos(orbitAngle) * orbitDist;
+            const c1y = centerY + Math.sin(orbitAngle) * orbitDist;
+
+            const c2x = centerX + Math.cos(orbitAngle + Math.PI) * orbitDist;
+            const c2y = centerY + Math.sin(orbitAngle + Math.PI) * orbitDist;
+
+            const margin = 35;
+            const limitW = width - margin;
+            const limitH = height - margin;
+
+            // Dibujamos agrupando por color para mejorar rendimiento (Batching)
+            for (let c = 0; c < COLORS.length; c++) {
+                ctx.fillStyle = COLORS[c];
+                for (let i = 0; i < PARTICLE_COUNT; i++) {
+                    if (pColorIndex[i] !== c) continue;
+
+                    const moveX = Math.sin(time * PARTICLE_WAVE_SPEED + pPhaseX[i]) * PARTICLE_WAVE_AMP;
+                    const moveY = Math.cos(time * PARTICLE_WAVE_SPEED + pPhaseY[i]) * PARTICLE_WAVE_AMP;
+
+                    let drawX, drawY;
+
+                    if (pGroup[i] === 0) {
+                        drawX = c1x + pX[i] + moveX;
+                        drawY = c1y + pY[i] + moveY;
+                    } else {
+                        drawX = c2x + pX[i] + moveX;
+                        drawY = c2y + pY[i] + moveY;
+                    }
+
+                    // REPULSIÓN MOUSE
+                    const dx = drawX - mouseX;
+                    const dy = drawY - mouseY;
+                    const distSq = dx * dx + dy * dy;
+                    if (distSq < 22500) { // 150*150
+                        const dist = Math.sqrt(distSq) || 1;
+                        const force = (1 - dist / 150) * 40;
+                        drawX += (dx / dist) * force;
+                        drawY += (dy / dist) * force;
+                    }
+
+                    // MÁSCARA DEL CONTENEDOR
+                    if (drawX > margin && drawX < limitW && drawY > margin && drawY < limitH) {
+                        ctx.fillRect(drawX, drawY, pSize[i], pSize[i]);
+                    }
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', () => {
+            resize();
+            initParticles();
+        });
+
+        initParticles();
+        animate();
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,652 @@
+.glass-container {
+    position: fixed;
+    z-index: 100;
+    font-family: 'Roboto', sans-serif;
+    color: white;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+}
+
+.content {
+    position: absolute;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    width: auto;
+    /* La opacidad ayuda a ocultar el cambio instantáneo si el hacker text no ha terminado */
+    transition: opacity 0.2s ease;
+    opacity: 1;
+}
+
+.content.hidden {
+    opacity: 1;
+    /* El hacker text maneja la invisibilidad de las letras */
+}
+
+/* Posiciones estáticas (Teletransporte instantáneo) */
+.glass-container.centered .content {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    align-items: center;
+}
+
+.glass-container.corner .content {
+    top: 60px;
+    left: 20px;
+    /* Moved logo further left */
+    transform: translate(0, 0);
+    align-items: flex-start;
+}
+
+.name,
+.subtitle,
+.menu {
+    display: flex;
+    flex-direction: column;
+}
+
+.centered .name,
+.centered .subtitle {
+    align-items: center;
+    text-align: center;
+}
+
+.corner .name,
+.corner .subtitle {
+    align-items: flex-start;
+    text-align: left;
+}
+
+.name {
+    margin: 0;
+    line-height: 1;
+    min-height: 110px;
+    /* Adjusted for 100px logo + breathing room */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.eddy-logo {
+    height: 100px;
+    width: auto;
+    filter: brightness(1);
+    transition: opacity 0.3s ease;
+    /* Removed height transition as it should stay same size */
+}
+
+/* Size stability: logo stays at 100px */
+.corner .eddy-logo {
+    height: 100px;
+}
+
+.corner .name {
+    min-height: 100px;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+/* Linear Horizontal Collapse Animations */
+@keyframes linear-out {
+    0% {
+        transform: scaleX(1);
+        opacity: 1;
+        filter: blur(0px);
+    }
+
+    100% {
+        transform: scaleX(0);
+        opacity: 0;
+        filter: blur(4px);
+    }
+}
+
+@keyframes linear-in {
+    0% {
+        transform: scaleX(0);
+        opacity: 0;
+        filter: blur(4px);
+    }
+
+    100% {
+        transform: scaleX(1);
+        opacity: 1;
+        filter: blur(0px);
+    }
+}
+
+.glitch-out {
+    animation: linear-out 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.glitch-in {
+    animation: linear-in 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    font-weight: 300;
+    margin-top: 1.2rem;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.9rem;
+    text-transform: uppercase;
+    min-height: 1.2rem;
+    padding-left: 0.9rem;
+    /* Compensate for letter-spacing at the start */
+}
+
+.corner .subtitle {
+    font-size: 0.7rem;
+    letter-spacing: 0.25rem;
+    margin-top: 0.2rem;
+    padding-left: 0;
+    /* Reset for corner */
+    margin-left: 37px;
+    /* One final pixel to the right */
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 3.5rem;
+}
+
+.centered .menu {
+    align-items: center;
+}
+
+.corner .menu {
+    margin-top: 2rem;
+    align-items: flex-start;
+    margin-left: 16px;
+    /* One final pixel to the right */
+}
+
+.menu-item {
+    cursor: none !important;
+    position: relative;
+    width: fit-content;
+    height: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+    min-height: 25px;
+}
+
+.menu-item .text {
+    font-size: 0.8rem;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.2rem;
+    opacity: 0.6;
+    padding: 0.4rem 1.5rem;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+}
+
+.menu-item.active .text {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.menu-item:hover .text {
+    opacity: 1;
+}
+
+.hover-box {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    z-index: 1;
+}
+
+.menu-item:not(.active):hover .hover-box {
+    transform: scaleX(1);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.dot {
+    position: absolute;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    background-color: white;
+    border-radius: 50%;
+    /* El circulito ahora se desvanece (opacity) en lugar de escalar */
+    transition: opacity 0.5s ease-in-out;
+    opacity: 0;
+    box-shadow: 0 0 15px white;
+    z-index: 11;
+}
+
+/* Ocultar el punto durante la transición hacker */
+.content.hidden .dot {
+    opacity: 0 !important;
+}
+
+.centered .dot {
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.centered .menu-item.active .dot {
+    opacity: 1;
+}
+
+.corner .dot {
+    left: 1.5rem;
+    transform: translateY(-50%);
+}
+
+.corner .menu-item.active .dot {
+    opacity: 1;
+}
+
+.content * {
+    cursor: none !important;
+}
+
+/* BIO CONTAINER - BOTTOM RIGHT */
+.bio-container {
+    position: absolute;
+    bottom: 80px;
+    right: 40px;
+    width: 240px;
+    /* Reducido para forzar más altura vertical */
+    text-align: right;
+    pointer-events: auto;
+}
+
+.bio-inner-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    /* Un pelín de respiro entre líneas */
+}
+
+.bio-line {
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* APARICIÓN ESCALONADA (Entrada) */
+.visible .bio-line {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* DESAPARICIÓN ESCALONADA (Salida línea por línea) */
+.bio-container:not(.visible) .bio-line {
+    opacity: 0;
+    transform: translateY(-15px);
+}
+
+/* Delays para aparecer (1 a 5) */
+.visible .line-1 {
+    transition-delay: 0.1s;
+}
+
+.visible .line-2 {
+    transition-delay: 0.2s;
+}
+
+.visible .line-3 {
+    transition-delay: 0.3s;
+}
+
+.visible .line-4 {
+    transition-delay: 0.4s;
+}
+
+.visible .line-5 {
+    transition-delay: 0.5s;
+}
+
+/* Delays para desaparecer (5 a 1 para efecto cascada invertida) */
+.bio-container:not(.visible) .line-5 {
+    transition-delay: 0.0s;
+}
+
+.bio-container:not(.visible) .line-4 {
+    transition-delay: 0.1s;
+}
+
+.bio-container:not(.visible) .line-3 {
+    transition-delay: 0.2s;
+}
+
+.bio-container:not(.visible) .line-2 {
+    transition-delay: 0.3s;
+}
+
+.bio-container:not(.visible) .line-1 {
+    transition-delay: 0.4s;
+}
+
+.bio-name {
+    font-size: 1.8rem;
+    font-weight: 400;
+    letter-spacing: 0.1rem;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    color: white;
+}
+
+.bio-text {
+    font-size: 1.1rem;
+    font-weight: 300;
+    line-height: 1.3;
+    /* Compacto */
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 0.01rem;
+    margin: 0;
+    /* Sin espacios entre líneas */
+}
+
+/* PROJECTS SECTION - REFINED MINIMALIST */
+.projects-container {
+    position: absolute;
+    top: 60px;
+    bottom: 60px;
+    right: 50px;
+    width: auto;
+    max-width: 850px;
+    /* Incrementado para evitar que nombres largos se corten */
+    pointer-events: auto;
+    opacity: 0;
+    visibility: hidden;
+    /* Entrada suave pero ágil de 0.8s */
+    transition: opacity 0.8s ease, visibility 0.8s;
+}
+
+/* Al SALIR, el contenedor desaparece un poco más rápido (0.6s) */
+/* Salida SÚPER RÁPIDA de 0.2s para evitar espacio en blanco */
+.projects-container:not(.visible),
+.bio-container:not(.visible) {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s;
+}
+
+.projects-container.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.projects-scrollbox {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    /* Súper compacto para ver que hay más abajo */
+    scroll-behavior: smooth;
+}
+
+/* Scrollbar casi invisible */
+.projects-scrollbox::-webkit-scrollbar {
+    width: 2px;
+}
+
+.projects-scrollbox::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.projects-scrollbox::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.projects-scrollbox:hover::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.project-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+    text-decoration: none;
+    padding: 8px 0;
+    /* Más corto */
+    background: transparent !important;
+    border: none !important;
+    opacity: 0;
+    transform: translateX(30px);
+    /* Transición fluida de entrada */
+    transition: opacity 0.6s cubic-bezier(0.2, 0.6, 0.35, 1),
+        transform 0.6s cubic-bezier(0.2, 0.6, 0.35, 1);
+    cursor: pointer;
+}
+
+/* EFECTO DE ILUMINACIÓN EN EL TEXTO */
+.project-item:hover .project-title-large {
+    color: white;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+    /* Iluminación */
+    filter: brightness(1.2);
+}
+
+.visible .project-item {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.project-title-large {
+    font-size: 3.5rem;
+    font-weight: 200;
+    letter-spacing: 0.1rem;
+    text-transform: uppercase;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1;
+    white-space: nowrap;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.project-meta {
+    margin-top: 3px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.project-date {
+    font-size: 0.75rem;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.2);
+    letter-spacing: 0.1rem;
+    text-transform: uppercase;
+}
+
+.project-tech-bold {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.05rem;
+    text-transform: uppercase;
+}
+
+.project-desc-simple {
+    font-size: 0.8rem;
+    font-weight: 300;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.3);
+    margin-top: 6px;
+    max-width: 400px;
+    /* Permitir que la descripción respire un poco más */
+}
+
+/* SALIDA CASI INSTANTÁNEA SIN DELAYS */
+.projects-container:not(.visible) .project-item {
+    opacity: 0;
+    transform: translateX(30px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition-delay: 0s !important;
+}
+
+/* Delays para aparecer (1 a 7) - Ritmo balanceado */
+.visible .p-line-1 {
+    transition-delay: 0.1s;
+}
+
+.visible .p-line-2 {
+    transition-delay: 0.2s;
+}
+
+.visible .p-line-3 {
+    transition-delay: 0.3s;
+}
+
+.visible .p-line-4 {
+    transition-delay: 0.4s;
+}
+
+.visible .p-line-5 {
+    transition-delay: 0.5s;
+}
+
+.visible .p-line-6 {
+    transition-delay: 0.6s;
+}
+
+.visible .p-line-7 {
+    transition-delay: 0.7s;
+}
+
+/* Delays para desaparecer */
+.projects-container:not(.visible) .p-line-7 {
+    transition-delay: 0.0s;
+}
+
+.projects-container:not(.visible) .p-line-6 {
+    transition-delay: 0.1s;
+}
+
+.projects-container:not(.visible) .p-line-5 {
+    transition-delay: 0.2s;
+}
+
+.projects-container:not(.visible) .p-line-4 {
+    transition-delay: 0.3s;
+}
+
+.projects-container:not(.visible) .p-line-3 {
+    transition-delay: 0.4s;
+}
+
+.projects-container:not(.visible) .p-line-2 {
+    transition-delay: 0.5s;
+}
+
+.projects-container:not(.visible) .p-line-1 {
+    transition-delay: 0.6s;
+}
+
+/* SECCIÓN CONTACTO - LINKS ESPARCIDOS */
+.contact-container {
+    position: absolute;
+    top: 0;
+    left: 40%;
+    /* Solo lado derecho */
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.8s ease, visibility 0.8s;
+}
+
+.contact-container.visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.contact-link {
+    position: absolute;
+    font-size: 0.85rem;
+    /* Un poco más pequeño */
+    font-weight: 800;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    text-decoration: none;
+    letter-spacing: 0.15rem;
+    padding: 10px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: color 0.3s ease, text-shadow 0.3s ease, opacity 0.6s ease, transform 0.6s ease;
+    cursor: pointer;
+}
+
+.visible .contact-link {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.contact-link:hover {
+    color: white;
+    text-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
+    /* Iluminación potente */
+    /* Eliminada la expansión de letter-spacing */
+}
+
+/* Delays escalonados para contacto */
+.visible .c-link-1 {
+    transition-delay: 0.2s;
+}
+
+.visible .c-link-2 {
+    transition-delay: 0.4s;
+}
+
+.visible .c-link-3 {
+    transition-delay: 0.6s;
+}
+
+/* Salida suave de contacto ESCALONADA */
+.contact-container:not(.visible) .contact-link {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* Delays para DESAPARECER (uno por uno) */
+.contact-container:not(.visible) .c-link-3 {
+    transition-delay: 0.0s;
+}
+
+.contact-container:not(.visible) .c-link-2 {
+    transition-delay: 0.1s;
+}
+
+.contact-container:not(.visible) .c-link-1 {
+    transition-delay: 0.2s;
+}
+
+@media (max-width: 768px) {
+    .contact-container {
+        left: 0;
+    }
+
+    .contact-link {
+        font-size: 0.7rem;
+        letter-spacing: 0.1rem;
+    }
+}
